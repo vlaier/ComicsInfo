@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -7,12 +7,13 @@ import {
   Image,
   TouchableOpacity,
 } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
+import { useRoute } from '@react-navigation/native';
 import { useInfiniteQuery } from 'react-query';
-import { xkcdApi } from '../api';
+import { getFetcher } from '../api';
 import { ComicDataI } from '../api/types';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootParamList } from '../App';
-
 const ComicBox = ({
   comic,
   onPress,
@@ -23,14 +24,12 @@ const ComicBox = ({
   return (
     <TouchableOpacity onPress={onPress}>
       <View style={styles.comicBox}>
-        <View style={styles.comicImageBox}>
-          <Image
-            style={{ flex: 1 }}
-            resizeMode="contain"
-            source={{ uri: comic.img }}
-            alt={comic.alt}
-          />
-        </View>
+        <Image
+          style={styles.comicImageBox}
+          resizeMode="cover"
+          source={{ uri: comic.img }}
+          alt={comic.alt}
+        />
         <View style={styles.comicTextBox}>
           <Text style={styles.title}>{comic.title}</Text>
         </View>
@@ -44,10 +43,17 @@ const Home = ({
 }: {
   navigation: NativeStackNavigationProp<RootParamList, 'Home'>;
 }) => {
+  const route = useRoute();
+  const [comicSource, setComicSource] = useState('xkcd');
+  let fetcher = getFetcher(comicSource);
+  useCallback(() => {
+    fetcher = getFetcher(comicSource);
+  }, [comicSource]);
+
   const { isLoading, data, hasNextPage, fetchNextPage, error } =
     useInfiniteQuery(
-      'comic',
-      ({ pageParam = null }) => xkcdApi.getComic(pageParam),
+      comicSource,
+      ({ pageParam = null }) => fetcher.getComic(pageParam),
       {
         getNextPageParam: (lastPage) => {
           if (lastPage.nextPage) {
@@ -62,25 +68,35 @@ const Home = ({
       fetchNextPage();
     }
   };
-  if (isLoading) return <Text>Loading...</Text>;
-  if (error || !data) return <Text>Something went wrong</Text>;
 
   return (
     <View style={styles.container}>
-      <FlatList
-        data={data.pages.map((page) => page.results).flat()}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <ComicBox
-            comic={item}
-            onPress={() => navigation.navigate('Details', item)}
-          />
-        )}
-        onEndReached={loadMore}
-        onEndReachedThreshold={0.5}
-        contentContainerStyle={{ display: 'flex', gap: 15 }}
-        ListHeaderComponent={<Text style={styles.title}>Comic Books</Text>}
-      />
+      <Picker
+        selectedValue={comicSource}
+        onValueChange={(itemValue) => setComicSource(itemValue)}
+      >
+        <Picker.Item label="XKCD" value="xkcd" />
+        <Picker.Item label="Placeholder for other comics api" value="other" />
+      </Picker>
+
+      {!isLoading && !error && data && (
+        <FlatList
+          data={data.pages.map((page) => page.results).flat()}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <ComicBox
+              comic={item}
+              onPress={() => navigation.navigate('Details', item)}
+            />
+          )}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.5}
+          contentContainerStyle={{ display: 'flex', gap: 15 }}
+          ListHeaderComponent={<Text style={styles.title}>Comic Books</Text>}
+        />
+      )}
+      {isLoading && <Text>Loading...</Text>}
+      {!!error && <Text>Something went wrong</Text>}
     </View>
   );
 };
@@ -90,18 +106,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingHorizontal: 10,
   },
+
   comicBox: {
     paddingHorizontal: 10,
     alignItems: 'center',
     display: 'flex',
     flexDirection: 'row',
-    borderColor: 'black',
-    borderWidth: 1,
+    gap: 50,
+    borderRadius: 5,
+    backgroundColor: '#f2f2f2',
     width: '100%',
     shadowColor: '#171717',
     shadowOffset: { width: -2, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 3,
+    paddingVertical: 10,
   },
   title: {
     fontSize: 16,
@@ -113,8 +132,12 @@ const styles = StyleSheet.create({
   },
 
   comicImageBox: {
-    width: 100,
-    height: 100,
+    width: 75,
+    height: 75,
+
+    borderWidth: 1,
+    borderColor: 'black',
+    borderRadius: 500,
   },
 });
 export default Home;
