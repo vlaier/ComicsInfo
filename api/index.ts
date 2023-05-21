@@ -27,3 +27,13 @@ export const xkcdApi = {
     };
   },
 };
+export const getFetcher = (source: string) => {
+  switch (source) {
+    case 'xkcd':
+      return xkcdApi;
+    case 'other':
+      return xkcdApi;
+    default:
+      return xkcdApi;
+  }
+};
