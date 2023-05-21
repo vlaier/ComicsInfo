@@ -5,7 +5,9 @@ import React from 'react';
 import Home from './screens/Home';
 import Details from './screens/Details';
 import { QueryClient, QueryClientProvider } from 'react-query';
-const Stack = createNativeStackNavigator();
+import { ComicDataI } from './api/types';
+
+const Stack = createNativeStackNavigator<RootParamList>();
 const queryClient = new QueryClient();
 export default function App() {
   return (
@@ -21,5 +23,5 @@ export default function App() {
 }
 export interface RootParamList extends ParamListBase {
   Home: undefined;
-  Details: undefined;
+  Details: ComicDataI;
 }
