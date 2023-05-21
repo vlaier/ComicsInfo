@@ -71,13 +71,17 @@ const Home = ({
 
   return (
     <View style={styles.container}>
-      <Picker
-        selectedValue={comicSource}
-        onValueChange={(itemValue) => setComicSource(itemValue)}
-      >
-        <Picker.Item label="XKCD" value="xkcd" />
-        <Picker.Item label="Placeholder for other comics api" value="other" />
-      </Picker>
+      <View style={styles.box}>
+        <Text style={styles.title}>Choose Source</Text>
+        <Picker
+          style={styles.select}
+          selectedValue={comicSource}
+          onValueChange={(itemValue) => setComicSource(itemValue)}
+        >
+          <Picker.Item label="XKCD" value="xkcd" />
+          <Picker.Item label="Placeholder for other comics api" value="other" />
+        </Picker>
+      </View>
 
       {!isLoading && !error && data && (
         <FlatList
@@ -138,6 +142,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'black',
     borderRadius: 500,
+  },
+  select: {
+    backgroundColor: '#f2f2f2',
+  },
+  box: {
+    marginTop: 10,
+    marginBottom: 20,
   },
 });
 export default Home;
