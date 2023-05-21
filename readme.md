@@ -16,7 +16,7 @@ To run this application locally, you will need to have Node.js installed on your
 This project uses the following dependencies:
 
 - [React Navigation](https://reactnavigation.org/docs/getting-started) for navigation between screens
-- [React Query](https://tanstack.com/query/v3/) for fetching and caching data
+- [React Query](https://tanstack.com/query/latest) for fetching and caching data
 
 ## How to Use
 
